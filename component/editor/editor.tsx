@@ -4,16 +4,24 @@ import { useState } from "react"
 import { languageArray, boilerPlate } from "@/constant"
 import { handleSubmit } from "."
 import { useSelector } from "react-redux"
-import { RootState } from "@reduxjs/toolkit/query"
+import { store } from "@/store/store"
+import { setInputValue ,setExpectedOutput } from "@/store/slice"
+import { AppDispatch, RootState } from "@/store/store"
 export default function CodeEditor() {
     const [lang, setLang] = useState(languageArray[0].value)
     const [language_id, setLanguageId] = useState<number | null>(languageArray[0].language_id);
-    
+
     const code = boilerPlate.find((b) => b.language === lang)?.code || ""
 
     const [editorCode, setEditorCode] = useState("")
-    //@ts-ignore
-    const output = useSelector((state) => state.output);
+
+    const output = useSelector((state: RootState) => state.output);
+
+    const inputCheck = useSelector((state: RootState) => state.input)
+
+    const [load,setLoad] = useState(false)
+
+
     return (
         <div className="p-4">
             <select
@@ -46,26 +54,49 @@ export default function CodeEditor() {
             />
 
             <div className="flex gap-4 mt-3">
-                <button
+                {/* <button
                     //onClick={handleCompile}
                     className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium transition-all duration-200 shadow-sm"
                 >
                     Compile
-                </button>
+                </button> */}
 
                 <button
-                    onClick={() => handleSubmit({
+                    onClick={() => 
+                        handleSubmit({
                         source_code: editorCode,
                         language_id,
-                        stdin: ""
-                    })}
+                        stdin: inputCheck
+                    })
+                        
+                    }
                     className="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 shadow-sm"
                 >
                     Run
                 </button>
             </div>
-            <div className="mt-4 bg-zinc-900 text-white p-3 rounded-md h-40 overflow-auto">
-                {output || "Output will appear here..."}
+            <div className="grid grid-cols-3 mt-4 gap-2">
+                <div className="grid grid-cols-1">
+                    <p>Input</p>
+                    <textarea name="" id="" className="bg-zinc-900 h-[100px]" onChange={(e) => {
+                        store.dispatch(setInputValue(e.target.value))
+                    }} ></textarea>
+                </div>
+                <div className="grid grid-cols-1">
+                    <p>Expected Output</p>
+                    <textarea name="" id="" className="bg-zinc-900 h-[100px]" onChange={(e) => {
+                        store.dispatch(setExpectedOutput(e.target.value))
+                    }} ></textarea>
+
+                </div>
+                <div className="grid grid-cols-1">
+                    <p>Output</p>
+                    <div className=" bg-zinc-900 text-white p-3 rounded-md  h-[100px] overflow-auto whitespace-pre">
+                        {output}
+                    </div>
+
+                </div>
+                
             </div>
         </div>
     )

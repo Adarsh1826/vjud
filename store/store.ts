@@ -1,10 +1,12 @@
 import { configureStore } from "@reduxjs/toolkit";
-import outputReducer from "./slice";
-
+import {outputReducer} from "./slice";
+import { inputReducer ,expectedOutputReducer} from "./slice";
 
 export const store = configureStore({
   reducer: {
     output: outputReducer,
+    input:inputReducer,
+    expectedOutput:expectedOutputReducer
   },
 });
 
