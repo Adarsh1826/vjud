@@ -1,13 +1,15 @@
 "use client"
 import { Editor } from "@monaco-editor/react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { languageArray, boilerPlate } from "@/constant"
-import { handleSubmit } from "."
+import { handleSubmit } from "../../calls"
 import { useSelector } from "react-redux"
 import { store } from "@/store/store"
-import { setInputValue ,setExpectedOutput } from "@/store/slice"
+import { setInputValue, setExpectedOutput } from "@/store/slice"
 import { AppDispatch, RootState } from "@/store/store"
-export default function CodeEditor() {
+export default function CodeEditor(
+
+) {
     const [lang, setLang] = useState(languageArray[0].value)
     const [language_id, setLanguageId] = useState<number | null>(languageArray[0].language_id);
 
@@ -19,8 +21,10 @@ export default function CodeEditor() {
 
     const inputCheck = useSelector((state: RootState) => state.input)
 
-    const [load,setLoad] = useState(false)
+    const exp = useSelector((state: RootState) => state.expectedOutput)
 
+    //const [passed, setPassed] = useState<boolean | undefined>();
+   const result = useSelector((state:RootState)=>state.testcase)
 
     return (
         <div className="p-4">
@@ -62,18 +66,21 @@ export default function CodeEditor() {
                 </button> */}
 
                 <button
-                    onClick={() => 
+                    onClick={async () => {
                         handleSubmit({
-                        source_code: editorCode,
-                        language_id,
-                        stdin: inputCheck
-                    })
+                            source_code: editorCode,
+                            language_id,
+                            stdin: inputCheck,
+                            exp
+                        });
+
                         
-                    }
-                    className="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white font-medium transition-all duration-200 shadow-sm"
+                    }}
+                    className="px-5 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white"
                 >
                     Run
                 </button>
+
             </div>
             <div className="grid grid-cols-3 mt-4 gap-2">
                 <div className="grid grid-cols-1">
@@ -96,8 +103,20 @@ export default function CodeEditor() {
                     </div>
 
                 </div>
-                
+
             </div>
+            {result !== null&&(
+                result ? (
+                    <div className="mt-4 px-4 py-2 rounded-lg bg-green-700 text-white font-semibold shadow">
+                        Passed
+                    </div>
+                ) : (
+                    <div className="mt-4 px-4 py-2 rounded-lg bg-red-700 text-white font-semibold shadow">
+                        Failed
+                    </div>
+                )
+            )}
+
         </div>
     )
 }

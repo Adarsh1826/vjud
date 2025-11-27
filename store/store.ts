@@ -1,12 +1,13 @@
 import { configureStore } from "@reduxjs/toolkit";
 import {outputReducer} from "./slice";
-import { inputReducer ,expectedOutputReducer} from "./slice";
+import { inputReducer ,expectedOutputReducer,testCaseReducer} from "./slice";
 
 export const store = configureStore({
   reducer: {
     output: outputReducer,
     input:inputReducer,
-    expectedOutput:expectedOutputReducer
+    expectedOutput:expectedOutputReducer,
+    testcase:testCaseReducer
   },
 });
 
