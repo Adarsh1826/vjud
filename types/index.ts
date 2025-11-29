@@ -17,3 +17,12 @@ export interface TestCaseProps{
     exp:string,
     out:string
 }
+
+// for multipletestcase
+export interface MultipleTestCaseProps{
+    id?:number
+    input:string
+    expectedoutput:string,
+    output?:string
+    passed?: boolean;
+}
