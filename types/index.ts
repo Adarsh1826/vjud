@@ -26,3 +26,9 @@ export interface MultipleTestCaseProps{
     output?:string
     passed?: boolean;
 }
+
+// for template 
+
+export interface TemplateProps{
+    template?:string
+}
