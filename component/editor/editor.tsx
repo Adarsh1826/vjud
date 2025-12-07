@@ -79,10 +79,7 @@ export default function CodeEditor() {
         });
     };
 
-    addTemplateToDB({
-        template:"hiii"
-    })
-
+   
 
     return (
         <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans selection:bg-blue-500/30 overflow-auto">

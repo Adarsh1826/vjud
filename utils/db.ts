@@ -13,10 +13,10 @@ export async function connectDB(){
 
 export const addTemplateToDB = async ({template}:TemplateProps)=>{
     const db = await connectDB()
-        const id = Date.now();
+    const id = Date.now();
 
     db.put("template",{
-        id,
+       id,
         template
     })
 }

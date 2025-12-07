@@ -32,3 +32,9 @@ export interface MultipleTestCaseProps{
 export interface TemplateProps{
     template?:string
 }
+
+// for codeforces/ codechef problem url
+
+export interface ProblemUri{
+    uri:string
+}
