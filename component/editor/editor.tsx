@@ -1,6 +1,6 @@
 "use client";
 import { Editor } from "@monaco-editor/react";
-import { useState } from "react";
+import React, { useEffect, useState } from 'react';
 import { languageArray, boilerPlate } from "@/constant";
 import { handleSubmit } from "../../calls";
 import { useSelector } from "react-redux";
@@ -8,6 +8,9 @@ import { store } from "@/store/store";
 import { setInputValue, setExpectedOutput, addTestCase, removeTestCase, updateTestCase, setPassed } from "@/store/slice";
 import { AppDispatch, RootState } from "@/store/store";
 import { MultipleTestCaseProps } from "@/types";
+
+import { getallDBData, addTemplateToDB } from '@/utils/db';
+
 const PlayIcon = () => (
     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <polygon points="5 3 19 12 5 21 5 3"></polygon>
@@ -36,11 +39,67 @@ export default function CodeEditor() {
   const [lang, setLang] = useState(languageArray[0].value);
   const [language_id, setLanguageId] = useState<number | null>(languageArray[0].language_id);
   const code = boilerPlate.find((b) => b.language === lang)?.code || "";
+
   const [editorCode, setEditorCode] = useState("");
 
   const data = useSelector((state: RootState) => state.multtest);
 
   const [aiOutput, setAiOutput] = useState("");
+
+   // Templates list from DB
+  const [templates, setTemplates] = useState<Array<{ id: number; template: string }>>([]);
+
+    // ---------- FIX #1: Load initial code on FIRST MOUNT ----------
+  useEffect(() => {
+    setEditorCode(code);
+  }, []);
+
+  // ---------- FIX #2: Update when language changes ----------
+// Load default code ONLY if editor is empty (user has not selected a template)
+useEffect(() => {
+  if (editorCode.trim() === "") {
+    const defaultCode = boilerPlate.find(b => b.language === lang)?.code || "";
+    setEditorCode(defaultCode);
+  }
+}, [lang]);
+
+
+  // ---------- FIX #3: Load templates from DB on mount ----------
+  useEffect(() => {
+    (async () => {
+      try {
+        const templatesFromDB = await getallDBData();
+        setTemplates(Array.isArray(templatesFromDB) ? templatesFromDB : []);
+      } catch (err) {
+        console.error('Error loading templates on mount:', err);
+      }
+    })();
+  }, []);
+
+  // Save template
+  const saveTemplate = async () => {
+    if (!editorCode.trim()) {
+      alert('Cannot save empty template.');
+      return;
+    }
+
+    await addTemplateToDB({ template: editorCode });
+
+    const updated = await getallDBData();
+    setTemplates(Array.isArray(updated) ? updated : []);
+
+    alert('Template Saved!');
+  };
+
+  // Manual Load
+  const loadTemplates = async () => {
+    const templatesFromDB = await getallDBData();
+    console.log('Loaded templates:', templatesFromDB);
+    setTemplates(Array.isArray(templatesFromDB) ? templatesFromDB : []);
+  };
+
+
+  ////////////
 
   const addNewTestCase = () => {
     const newId = Date.now();
@@ -119,8 +178,38 @@ export default function CodeEditor() {
                 <option key={lang.id} value={lang.value}>{lang.label}</option>
               ))}
             </select>
+             <button onClick={saveTemplate} className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm">
+              Save Template
+            </button>
+
+            {/* <button onClick={loadTemplates} className="px-3 py-2 bg-zinc-700 text-white rounded-md text-sm">
+              Load Templates
+            </button> */}
           </div>
         </div>
+
+        {/* Template selector */}
+        {templates.length > 0 && (
+          <select
+            className="px-3 py-2 bg-zinc-800 text-white rounded-md text-sm"
+            defaultValue=""
+            onChange={(e) => {
+              const selected = templates.find((t) => String(t.id) === e.target.value);
+              if (selected) {
+                console.log("Selected template:", selected);
+                setEditorCode(selected.template);
+              }
+            }}
+          >
+            <option value="">Select Template</option>
+            {templates.map((t) => (
+              <option key={t.id} value={String(t.id)}>
+                Template {t.id}
+              </option>
+            ))}
+          </select>
+        )}
+
 
         {/* --- Editor --- */}
         <div className="relative rounded-xl border border-zinc-800 overflow-hidden shadow-2xl bg-[#1e1e1e]">

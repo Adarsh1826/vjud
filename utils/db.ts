@@ -19,6 +19,7 @@ export const addTemplateToDB = async ({template}:TemplateProps)=>{
        id,
         template
     })
+    return {id,template};
 }
 
 export const getallDBData = async ()=>{
@@ -26,4 +27,5 @@ export const getallDBData = async ()=>{
 
    const res = await db.getAll("template")
     console.log(res)
+    return res;
 }
