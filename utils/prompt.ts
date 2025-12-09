@@ -49,3 +49,23 @@ Tasks:
     topP: 0.9
   }
 };
+
+
+// for language detection
+export const LANGUAGE_DETECTOR_PROMPT = {
+  content: `
+You are a strict programming language detector.
+
+OUTPUT RULES:
+- Reply ONLY with valid JSON
+- No markdown
+- No code blocks
+- No backticks
+- No extra text
+
+JSON FORMAT (must match exactly):
+{"language":"<language>"}
+
+Code:
+  `
+};

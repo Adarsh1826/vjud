@@ -12,27 +12,27 @@ import { MultipleTestCaseProps } from "@/types";
 import { getallDBData, addTemplateToDB } from '@/utils/db';
 
 const PlayIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="5 3 19 12 5 21 5 3"></polygon>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polygon points="5 3 19 12 5 21 5 3"></polygon>
+  </svg>
 );
 const PlusIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19"></line>
-        <line x1="5" y1="12" x2="19" y2="12"></line>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <line x1="12" y1="5" x2="12" y2="19"></line>
+    <line x1="5" y1="12" x2="19" y2="12"></line>
+  </svg>
 );
 const TrashIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="3 6 5 6 21 6"></polyline>
-        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="3 6 5 6 21 6"></polyline>
+    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+  </svg>
 );
 const CodeIcon = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <polyline points="16 18 22 12 16 6"></polyline>
-        <polyline points="8 6 2 12 8 18"></polyline>
-    </svg>
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="16 18 22 12 16 6"></polyline>
+    <polyline points="8 6 2 12 8 18"></polyline>
+  </svg>
 );
 
 export default function CodeEditor() {
@@ -46,25 +46,34 @@ export default function CodeEditor() {
 
   const [aiOutput, setAiOutput] = useState("");
 
-   // Templates list from DB
-  const [templates, setTemplates] = useState<Array<{ id: number; template: string }>>([]);
 
-    // ---------- FIX #1: Load initial code on FIRST MOUNT ----------
+
+
+  const [templates, setTemplates] = useState<
+    Array<{ id: number; template: string; language: string }>
+  >([]);
+
+  const [isTemplateActive, setIsTemplateActive] = useState(false);
+
+  // first inital loading template
   useEffect(() => {
     setEditorCode(code);
   }, []);
 
-  // ---------- FIX #2: Update when language changes ----------
-// Load default code ONLY if editor is empty (user has not selected a template)
-useEffect(() => {
-  if (editorCode.trim() === "") {
-    const defaultCode = boilerPlate.find(b => b.language === lang)?.code || "";
-    setEditorCode(defaultCode);
-  }
-}, [lang]);
+
+  // for switching if different language is selected from language dropdown
+  useEffect(() => {
+    if (!isTemplateActive) {
+      const defaultCode =
+        boilerPlate.find((b) => b.language === lang)?.code || "";
+      setEditorCode(defaultCode);
+    }
+  }, [lang, isTemplateActive]);
 
 
-  // ---------- FIX #3: Load templates from DB on mount ----------
+
+
+  // to load all user saved template
   useEffect(() => {
     (async () => {
       try {
@@ -76,35 +85,45 @@ useEffect(() => {
     })();
   }, []);
 
-  // Save template
+  // Save template function
   const saveTemplate = async () => {
     if (!editorCode.trim()) {
-      alert('Cannot save empty template.');
+      alert("Cannot save empty template.");
       return;
     }
 
-    await addTemplateToDB({ template: editorCode });
+    const res = await fetch("/api/ailang", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code: editorCode }),
+    });
+
+    const data = await res.json();
+
+
+    const detectedLanguage = data.language || lang;
+
+
+    await addTemplateToDB({
+      template: editorCode,
+      language: detectedLanguage,
+    });
 
     const updated = await getallDBData();
     setTemplates(Array.isArray(updated) ? updated : []);
 
-    alert('Template Saved!');
-  };
-
-  // Manual Load
-  const loadTemplates = async () => {
-    const templatesFromDB = await getallDBData();
-    console.log('Loaded templates:', templatesFromDB);
-    setTemplates(Array.isArray(templatesFromDB) ? templatesFromDB : []);
+    alert("Template Saved!");
   };
 
 
-  ////////////
 
+  // to add and update key value pair for testcase
   const addNewTestCase = () => {
     const newId = Date.now();
     store.dispatch(addTestCase({ id: newId, input: "", expectedoutput: "", output: "" }));
   };
+
+  // for multiple testcase running
 
   const runTestCase = async (tc: MultipleTestCaseProps) => {
     if (!tc.id) return;
@@ -117,6 +136,7 @@ useEffect(() => {
     });
   };
 
+  // for ai analyziation
   const analyzeWithAI = async () => {
     try {
       // Fake problem description
@@ -147,6 +167,10 @@ useEffect(() => {
     }
   };
 
+  // console.log(lang);
+  // console.log(language_id);
+
+
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-300 font-sans selection:bg-blue-500/30 overflow-auto">
       <div className="max-w-7xl mx-auto p-4 md:p-6 lg:p-8 space-y-6">
@@ -163,11 +187,13 @@ useEffect(() => {
             </div>
           </div>
 
-          <div className="w-full md:w-auto">
+          <div className="w-full md:w-auto flex gap-2">
             <select
               onChange={(e) => {
                 const selectedValue = e.target.value;
+
                 setLang(selectedValue);
+                setIsTemplateActive(false)
                 languageArray.forEach((l) => {
                   if (l.value === selectedValue) setLanguageId(l.language_id);
                 });
@@ -178,7 +204,7 @@ useEffect(() => {
                 <option key={lang.id} value={lang.value}>{lang.label}</option>
               ))}
             </select>
-             <button onClick={saveTemplate} className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm">
+            <button onClick={saveTemplate} className="px-3 py-2 bg-blue-600 text-white rounded-md text-sm overflow-none">
               Save Template
             </button>
 
@@ -188,32 +214,39 @@ useEffect(() => {
           </div>
         </div>
 
+
         {/* Template selector */}
         {templates.length > 0 && (
           <select
             className="px-3 py-2 bg-zinc-800 text-white rounded-md text-sm"
             defaultValue=""
             onChange={(e) => {
-              const selected = templates.find((t) => String(t.id) === e.target.value);
+              const selected = templates.find(
+                (t) => String(t.id) === e.target.value
+              );
               if (selected) {
-                console.log("Selected template:", selected);
                 setEditorCode(selected.template);
+                setLang(selected.language);
+                setIsTemplateActive(true)
               }
             }}
           >
             <option value="">Select Template</option>
+
             {templates.map((t) => (
-              <option key={t.id} value={String(t.id)}>
-                Template {t.id}
+              <option key={t.id} value={t.id}>
+                {t.language.toUpperCase()} - {t.id}
               </option>
             ))}
           </select>
         )}
 
 
+
         {/* --- Editor --- */}
         <div className="relative rounded-xl border border-zinc-800 overflow-hidden shadow-2xl bg-[#1e1e1e]">
           <Editor
+            key={lang}
             height="60vh"
             language={lang}
             value={editorCode || code}
@@ -256,7 +289,10 @@ useEffect(() => {
                       <PlayIcon />
                       Run
                     </button>
-                    <button onClick={() => store.dispatch(removeTestCase(tc.id!))} className="text-zinc-500 hover:text-red-400 p-1.5 rounded-md hover:bg-red-500/10 transition-colors">
+                    <button onClick={() => {
+                      store.dispatch(removeTestCase(tc.id!))
+                        setAiOutput("")
+                      }} className="text-zinc-500 hover:text-red-400 p-1.5 rounded-md hover:bg-red-500/10 transition-colors">
                       <TrashIcon />
                     </button>
                   </div>
@@ -293,10 +329,12 @@ useEffect(() => {
           </div>
 
           {/* --- AI Output --- */}
-          <div className="mt-6 p-4 border border-zinc-700 rounded-xl bg-zinc-900/50">
+          {
+            aiOutput.length>0 && <div className="mt-6 p-4 border border-zinc-700 rounded-xl bg-zinc-900/50">
             <h4 className="text-sm font-semibold text-zinc-100 mb-2">AI Analysis Output</h4>
             <pre className="text-xs font-mono text-zinc-200 whitespace-pre-wrap">{aiOutput || "AI output will appear here after analyzing..."}</pre>
           </div>
+          }
         </div>
       </div>
     </div>

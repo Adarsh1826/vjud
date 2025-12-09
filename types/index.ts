@@ -29,9 +29,12 @@ export interface MultipleTestCaseProps{
 
 // for template 
 
-export interface TemplateProps{
-    template?:string
-}
+export type TemplateProps = {
+  id?: number;
+  template: string;
+  language: string;
+};
+
 
 // for codeforces/ codechef problem url
 

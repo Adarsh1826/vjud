@@ -1,26 +1,35 @@
 import { TemplateProps } from "@/types";
 import { openDB } from "idb";
 
-export async function connectDB(){
-    return await openDB('codedb',1,{
-        upgrade(db){
-            if(!db.objectStoreNames.contains("template")){
-                db.createObjectStore("template",{keyPath:"id"})
-            }
-        }
-    })
+export async function connectDB() {
+  return await openDB("codedb", 2, {   
+    upgrade(db) {
+      if (!db.objectStoreNames.contains("template")) {
+        const store = db.createObjectStore("template", { keyPath: "id" });
+
+       
+        store.createIndex("language", "language", { unique: false });
+      }
+    },
+  });
 }
 
-export const addTemplateToDB = async ({template}:TemplateProps)=>{
-    const db = await connectDB()
-    const id = Date.now();
 
-    db.put("template",{
-       id,
-        template
-    })
-    return {id,template};
-}
+export const addTemplateToDB = async ({ template, language }: TemplateProps) => {
+  const db = await connectDB();
+  const id = Date.now();
+
+  const record = {
+    id,
+    template,
+    language,        
+    createdAt: Date.now(),
+  };
+
+  await db.put("template", record);
+  return record;
+};
+
 
 export const getallDBData = async ()=>{
     const db = await connectDB()

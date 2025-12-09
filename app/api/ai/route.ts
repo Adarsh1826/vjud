@@ -18,10 +18,10 @@ export async function POST(req: Request) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: {
-            temperature: 0.1,
-            maxOutputTokens: 2048,
-          },
+          // generationConfig: {
+          //   temperature: 0.1,
+          //   maxOutputTokens: 2048,
+          // },
         }),
       }
     );
