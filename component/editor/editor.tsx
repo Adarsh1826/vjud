@@ -140,7 +140,7 @@ export default function CodeEditor() {
   const analyzeWithAI = async () => {
     try {
       // Fake problem description
-      const fakeProblem = "Write a function to add two numbers";
+      //const fakeProblem = "Write a function to add two numbers";
 
       // Collect all test cases as JSON
       const testCases = data.map((tc) => ({
@@ -152,7 +152,7 @@ export default function CodeEditor() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          problem: fakeProblem,
+          
           code: editorCode,
           inputs: JSON.stringify(testCases.map((t) => t.input)),
           expected: JSON.stringify(testCases.map((t) => t.expected)),

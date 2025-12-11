@@ -3,13 +3,13 @@ import { NextResponse } from "next/server";
 
 export async function POST(req: Request) {
   try {
-    const { problem, code, inputs, expected } = await req.json();
+    const {  code, inputs, expected } = await req.json();
 
-    if (!problem || !code) {
+    if ( !code) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const prompt = DEBUG_PROMPT.build(problem, code, inputs || "", expected || "");
+    const prompt = DEBUG_PROMPT.build( code, inputs || "", expected || "");
 
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
